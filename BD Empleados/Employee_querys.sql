@@ -64,3 +64,45 @@ FROM employee;
 -- Consulta 3: Calcular la suma total de bonificaciones
 SELECT SUM(bonus) AS suma_bonificacion
 FROM employee_transaction;
+
+-- 8 Consultas con Group By
+-- Consulta 1: Agrupar a los empleados por edad
+SELECT age, COUNT(*) AS cantidad_empleados
+FROM employee
+GROUP BY age
+ORDER BY age DESC;
+
+-- Consulta 2: Agrupar a los empleados según la escala de satisfacción
+SELECT employee_satisfaction, COUNT(*) AS total_empleados
+FROM employee_transaction
+GROUP BY employee_satisfaction
+ORDER BY employee_satisfaction;
+
+-- 9 Consultas con Having
+SELECT employee_satisfaction, COUNT(employee_id) AS total_empleados
+FROM employee_transaction
+GROUP BY employee_satisfaction
+HAVING COUNT(employee_id) < 100
+ORDER BY employee_satisfaction;
+
+-- 10 Consultas con JOIN
+-- Consulta 1: Obtener el nombre del empleado junto con el nombre del puesto al que pertenece
+SELECT e.name, e.surname, t.job_title
+FROM employee e
+INNER JOIN job_title t
+ON e.id_job_title = t.id_job_title
+ORDER BY name;
+
+-- Consulta 2: Obtener empleados junto con su información de estado civil
+SELECT e.employee_id AS Legajo, e.name AS Nombre, e.surname AS Apellido, m.marital_status AS Estado_Civil
+FROM employee e
+LEFT JOIN marital_status m
+ON e.id_marital_status = m.id_marital_status;
+
+-- 11 Consultas con UNION y UNION ALL
+-- Conuslta 1: Supongamos que quieres crear una lista combinada con los nombres dos departamentos
+SELECT * FROM department
+WHERE department = 'Production'
+UNION ALL
+SELECT * FROM department
+WHERE department = 'Sales';
