@@ -106,3 +106,57 @@ WHERE department = 'Production'
 UNION ALL
 SELECT * FROM department
 WHERE department = 'Sales';
+
+-- 12 Subconsultas
+--  Conuslta 1: Encuentra el empleado con el salario más alto.
+SELECT * 
+FROM employee 
+WHERE employee_id = (SELECT employee_id FROM employee_transaction ORDER BY annual_salary DESC LIMIT 1);
+
+-- 13 Condicional IF
+--  Conuslta 1: Muestra el estado laboral de los empleados indicando si están "Activos" o "Inactivos".
+SELECT name, surname,
+	IF(id_status = 1, 'Activo', 'Inactivo') AS estado_laboral
+FROM employee;
+
+-- 14 Condicional CASE
+-- Agrupa empleados según rangos de edad.
+SELECT name, surname, age,
+	CASE
+		WHEN age < 25 THEN 'Joven'
+        WHEN age BETWEEN 25 AND 40 THEN 'Adulto'
+        WHEN age > 40 THEN 'Mayor'
+        ELSE 'Sin clasificación'
+	END AS categoria_edad
+FROM employee;
+
+-- 15 CAST
+describe employee;
+
+SELECT * FROM employee 
+WHERE CAST(dob AS DATE) > '1970-01-01';
+
+-- 16 Funciones de Fecha
+--  Conuslta 1:
+SELECT name, dob, YEAR(dob) AS Año, MONTH(dob) AS Mes
+FROM employee;
+
+--  Conuslta 2:
+SELECT hire_date, DATE_ADD(hire_date, INTERVAL 90 DAY) AS 'Fin período de prueba'
+FROM employee_transaction;
+
+--  Conuslta 3:
+SELECT hire_date,
+DATEDIFF(CURDATE(), hire_date) AS dias_transcurridos
+FROM employee_transaction;
+
+-- 17 Cadenas de Texto
+SELECT UPPER(surname) AS Mayuscula FROM employee;
+
+SELECT LOWER(name) AS Minuscula FROM employee;
+
+SELECT CONCAT(name, ' (', dob, ')') AS Año_nacimiento FROM employee;
+
+SELECT SUBSTRING(job_title,1,5) AS Extracto_ocupación FROM job_title;
+
+SELECT job_title, LENGTH(job_title) AS longitud FROM job_title;
