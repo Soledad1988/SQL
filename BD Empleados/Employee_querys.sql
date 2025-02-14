@@ -160,3 +160,116 @@ SELECT CONCAT(name, ' (', dob, ')') AS Año_nacimiento FROM employee;
 SELECT SUBSTRING(job_title,1,5) AS Extracto_ocupación FROM job_title;
 
 SELECT job_title, LENGTH(job_title) AS longitud FROM job_title;
+
+-- 18 CTEs
+WITH listaEmpleados AS (
+SELECT employee_id, name, surname FROM employee
+),
+
+listaSueldos AS (
+SELECT employee_id, annual_salary FROM employee_transaction
+)
+
+SELECT * FROM listaEmpleados
+JOIN listaSueldos 
+ON listaEmpleados.employee_id = listaSueldos.employee_id;
+
+-- 19 ROW_NUMBER()
+SELECT job_title,
+ROW_NUMBER() OVER(ORDER BY job_title) AS Orden
+FROM job_title;
+
+-- 20 PARTITION BY()
+SELECT e.id_gender, t.job_title,
+ROW_NUMBER() OVER(PARTITION BY e.id_gender ORDER BY t.job_title) AS Orden
+FROM employee e
+JOIN job_title t 
+ON e.id_job_title = t.id_job_title;
+
+SELECT * FROM gender;
+
+-- 20 PROCEDURE
+
+-- consulta 1. Lista todos los campos de la tabla empleados
+DELIMITER //
+
+CREATE PROCEDURE lista_empleados()
+BEGIN
+	SELECT * FROM employee;
+END //
+
+DELIMITER ;
+
+-- Consulta 2. Este procedimiento recibe un id_departmento y devuelve los empleados de ese departamento.
+DELIMITER //
+CREATE PROCEDURE traerEmpleadosPorDepartamento(IN dep_id INT)
+BEGIN
+	SELECT e.employee_id, e.name, e.surname, d.department
+    FROM employee e
+    JOIN department d 
+    ON e.id_department = d.id_department
+    WHERE e.id_department = dep_id;
+END //
+DELIMITER ;
+
+-- 21 Triggers
+
+-- Consulta 1. Cada vez que un empleado tiene una fecha de salida (leave_date), se cambia automáticamente su estado laboral a "Inactivo"
+DELIMITER //
+
+CREATE TRIGGER salida_empleado
+AFTER UPDATE ON employee_transaction
+FOR EACH ROW
+BEGIN
+    IF NEW.leave_date IS NOT NULL THEN
+        UPDATE employee
+        SET id_status = (SELECT id_status FROM status WHERE status = 'Inactive')
+        WHERE employee_id = NEW.employee_id;
+    END IF;
+END //
+
+DELIMITER ;
+
+SELECT DISTINCT(employee_id), name, surname 
+FROM employee
+WHERE id_status = 1
+LIMIT 15;
+
+SELECT employee_id, id_status 
+FROM employee 
+WHERE employee_id = 10006;
+
+UPDATE employee_transaction 
+SET leave_date ='2025-01-31'
+WHERE employee_id = 10006;
+
+SELECT * FROM status;
+
+-- Viws
+-- Consulta1. Vista de empleados activos con su información principal
+CREATE VIEW EmpleadosActivos AS
+SELECT e.employee_id, e.name, e.surname, d.department, j.job_title, s.status
+FROM employee e
+JOIN department d ON e.id_department = d.id_department
+JOIN job_title j ON e.id_job_title = j.id_job_title
+JOIN status s ON e.id_status = s.id_status
+WHERE s.status = 'Active';
+
+-- Consulta 2. vista con el nombre del departamento y la cantidad de empleados activos en ese departamento
+CREATE VIEW EmpleadosActivosPorDepartamento AS
+SELECT d.department, COUNT(e.employee_id) AS empleados_activos
+FROM employee e
+JOIN department d 
+ON e.id_department = d.id_department
+JOIN status s 
+ON e.id_status = s.id_status
+WHERE s.status = 'Active'
+GROUP BY d.department;
+
+-- Consulta 3. Cantidad de empleados activos
+CREATE VIEW CuentaEmpleadosActivos AS
+SELECT COUNT(*) AS empleados_activos
+FROM employee e
+WHERE e.id_status = (SELECT id_status FROM status WHERE status = 'Active');
+
+SELECT * FROM CuentaEmpleadosActivos;
